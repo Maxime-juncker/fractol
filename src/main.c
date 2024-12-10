@@ -5,6 +5,14 @@
 #include <stdio.h>
 #include <time.h>
 
+
+typedef enum e_fractal
+{
+	NONE,
+	MANDLEBROT,
+	JULIA
+} t_fractal;
+
 typedef struct s_specs
 {
 	size_t	width;
@@ -14,6 +22,7 @@ typedef struct s_specs
 	void	*mlx;
 	void	*mlx_win;
 
+	t_fractal	type;
 	float scale;
 	int x_offset;
 	int y_offset;
@@ -51,10 +60,23 @@ int	compute_color(int iteration, int max_iteration)
 	r = 150 * iteration / max_iteration * (psychedelic_power);
 	g = 50 * iteration / max_iteration * (psychedelic_power);
 	b = 255 * iteration / max_iteration * (psychedelic_power);
+	// r = 255 * iteration / max_iteration;
+	// g = 255 * iteration / max_iteration;
+	// b = 255 * iteration / max_iteration;
 
 	return create_trgb(0, r, g, b);
 }
 
+double complex mandelbrot(double complex z, double complex c, t_specs *specs)
+{
+	return (z*z + c * specs->scale);
+}
+
+double complex julia(double complex z, double complex c, t_specs *specs)
+{
+	(void)specs;
+	return ((z*z + c));
+}
 
 void	draw_fractal(t_specs *specs)
 {
@@ -70,60 +92,71 @@ void	draw_fractal(t_specs *specs)
 	float j = 0;
 	size_t iteration = 0;
 	size_t max_iteration = 30;
-	float complex c;
-	float complex z;
+	double complex c;
+	double complex z;
 
-	int	threshold = 10;
-
+	float	threshold = 2;
 
 	while (j < specs->height)
 	{
 		i = 0;
 		while (i < specs->width)
 		{
-			c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
-			z = 0;
+			if (specs->type == MANDLEBROT)
+			{
+				c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
+				z = 0;
+			}
+			else
+			{
+				c = 0.3 + 0.6 * I;
+				z = (((i - specs->x_offset) - specs->width / 2)* specs->scale) + (((j - specs->y_offset) - specs->height / 2) * I* specs->scale);
+			}
 			iteration = 0;
 			while (iteration < max_iteration)
 			{
-				if (cabsf(z) >= threshold)
+				if (cabs(z) >= threshold)
 					break;
-				z = z*z + c * specs->scale;
+				if (specs->type == MANDLEBROT)
+					z = mandelbrot(z, c, specs);
+				else if (specs->type == JULIA)
+					z = julia(z, c, specs);
 				iteration++;
 			}
+			// printf("iteration: %zu abs: %lf\n", iteration, cabs(z));
 			set_pixel(&img, i, j, compute_color(iteration, max_iteration));
 			i++;
 		}
 		j++;
 	}
 	t = clock() - t;
-	 double time_taken = ((double)t)/CLOCKS_PER_SEC;
-	 full_time += time_taken;
-	printf("render time: %lf [full time]: %lf\n", time_taken, full_time);
+	double time_taken = ((double)t)/CLOCKS_PER_SEC;
+	full_time += time_taken;
+	// printf("render time: %lf [full time]: %lf\n", time_taken, full_time);
 	mlx_put_image_to_window(specs->mlx, specs->mlx_win, img.img, 0, 0);
 }
 
 
+
+
 int	handle_mouse_event(int button, int x, int y, t_specs *specs)
 {
-	(void)x;
-	(void)y;
 	if (specs == NULL)
 		return (-1);
 	if (button == 4)
 	{
 		specs->scale -= .05f * specs->scale;
 
-		specs->x_offset -= x - specs->width / 10;
-		specs->y_offset -= y - specs->height / 10;
+		specs->x_offset -= x / 5 - specs->width / 10;
+		specs->y_offset -= y / 3 - specs->height / 10;
 		draw_fractal(specs);
 	}
 	if (button == 5)
 	{
 		specs->scale += .05f * specs->scale;
 
-		specs->x_offset += x- specs->width / 10;
-		specs->y_offset -= y - specs->height / 10;
+		specs->x_offset += x / 5 - specs->width / 10;
+		specs->y_offset += y / 3 - specs->height / 10;
 		draw_fractal(specs);
 	}
 	return 0;
@@ -156,7 +189,8 @@ int main(void)
 
 	specs.width = 720;
 	specs.height = 480;
-	specs.title = "HAAAAAA";
+	specs.title = "julia oui oui vrooooooooom";
+	specs.type = JULIA;
 
 	specs.scale = .005f;
 	specs.x_offset = 0;
