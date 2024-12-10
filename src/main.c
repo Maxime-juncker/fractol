@@ -4,13 +4,14 @@
 #include <complex.h>
 #include <stdio.h>
 #include <time.h>
-
+#include <fcntl.h>
 
 typedef enum e_fractal
 {
 	NONE,
 	MANDLEBROT,
-	JULIA
+	JULIA,
+	BURNING_SHIP
 } t_fractal;
 
 typedef struct s_specs
@@ -26,6 +27,7 @@ typedef struct s_specs
 	float scale;
 	int x_offset;
 	int y_offset;
+
 } t_specs;
 
 typedef struct	s_data {
@@ -75,7 +77,14 @@ double complex mandelbrot(double complex z, double complex c, t_specs *specs)
 double complex julia(double complex z, double complex c, t_specs *specs)
 {
 	(void)specs;
-	return ((z*z + c));
+	// return ((z*z + c));
+	return (z*z*z*z*z + c);
+}
+
+double complex burning_ship(double complex z, double complex c, t_specs *specs)
+{
+	return ((fabs(creal(z)) + I*fabs(cimag(z)))*(fabs(creal(z)) + I*fabs(cimag(z))) + c * specs->scale);
+	// return(fabs(creal(z))*fabs(creal(z)) - fabs(cimag(z))*fabs(cimag(z))) * (2 * fabs(creal(z)) * fabs(cimag(z)) * I) + c * specs->scale;
 }
 
 void	draw_fractal(t_specs *specs)
@@ -107,10 +116,15 @@ void	draw_fractal(t_specs *specs)
 				c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
 				z = 0;
 			}
+			else if (specs->type == JULIA)
+			{
+				c = 0.8 + 0.6 * I;
+				z = (((i - specs->x_offset) - specs->width / 2)* specs->scale) + (((j - specs->y_offset) - specs->height / 2) * I* specs->scale);
+			}
 			else
 			{
-				c = 0.3 + 0.6 * I;
-				z = (((i - specs->x_offset) - specs->width / 2)* specs->scale) + (((j - specs->y_offset) - specs->height / 2) * I* specs->scale);
+				z = 0;
+				c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
 			}
 			iteration = 0;
 			while (iteration < max_iteration)
@@ -121,6 +135,8 @@ void	draw_fractal(t_specs *specs)
 					z = mandelbrot(z, c, specs);
 				else if (specs->type == JULIA)
 					z = julia(z, c, specs);
+				else if (specs->type == BURNING_SHIP)
+					z = burning_ship(z, c, specs);
 				iteration++;
 			}
 			// printf("iteration: %zu abs: %lf\n", iteration, cabs(z));
@@ -141,24 +157,25 @@ void	draw_fractal(t_specs *specs)
 
 int	handle_mouse_event(int button, int x, int y, t_specs *specs)
 {
+	(void)x;
+	(void)y;
 	if (specs == NULL)
 		return (-1);
 	if (button == 4)
 	{
 		specs->scale -= .05f * specs->scale;
 
-		specs->x_offset -= x / 5 - specs->width / 10;
-		specs->y_offset -= y / 3 - specs->height / 10;
-		draw_fractal(specs);
+		// specs->x_offset -= x / 5 - specs->width / 10;
+		// specs->y_offset -= y / 3 - specs->height / 10;
 	}
 	if (button == 5)
 	{
 		specs->scale += .05f * specs->scale;
 
-		specs->x_offset += x / 5 - specs->width / 10;
-		specs->y_offset += y / 3 - specs->height / 10;
-		draw_fractal(specs);
+		// specs->x_offset += x / 5 - specs->width / 10;
+		// specs->y_offset += y / 3 - specs->height / 10;
 	}
+	draw_fractal(specs);
 	return 0;
 }
 
@@ -179,12 +196,41 @@ int	handle_key_event(int code, t_specs *specs)
 		specs->y_offset += 60;
 	if (code == 's')
 		specs->y_offset -= 60;
+	if (code == 'r')
+	{
+		specs->x_offset = 0;
+		specs->y_offset = 0;
+	}
 	draw_fractal(specs);
 	return (0);
 }
 
-int main(void)
+void	menu(t_specs *specs)
 {
+	(void)specs;
+	char	buff[20];
+	ft_printf("Choose your fractal:\n(0) exit\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
+	read(0, buff, 1);
+	if (buff[0] == '0')
+		exit(0);
+	if (buff[0] == '1')
+		specs->type = MANDLEBROT;
+	else if(buff[0] == '2')
+		specs->type = JULIA;
+	else if (buff[0] == '3')
+		specs->type = BURNING_SHIP;
+	else
+	{
+		ft_printf("\nWrong input, please try again\n");
+		menu(specs);
+	}
+
+}
+
+int main(int argc, char **argv)
+{
+	(void)argc;
+	(void)argv;
 	t_specs	specs;
 
 	specs.width = 720;
@@ -195,6 +241,8 @@ int main(void)
 	specs.scale = .005f;
 	specs.x_offset = 0;
 	specs.y_offset = 0;
+
+	menu(&specs);
 
 	specs.mlx = mlx_init();
 	specs.mlx_win = mlx_new_window(specs.mlx, specs.width, specs.height, specs.title);
