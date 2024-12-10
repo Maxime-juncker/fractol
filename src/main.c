@@ -45,7 +45,7 @@ int	compute_color(int iteration, int max_iteration)
 
 	r = 255 * iteration / max_iteration;
 	g = 255 * iteration / max_iteration;
-	b = 100;
+	b = 255 * iteration / max_iteration;
 	// r = (hue / 255.0) * 255;
     // g = ((255 - hue) / 255.0) * 255;
     // b = 128	;
@@ -59,6 +59,7 @@ int main(void)
 	t_data	img;
 	t_specs	specs;
 	int	threshold = 700;
+	int	scale = 150;
 
 	specs.width = 720;
 	specs.height = 420;
@@ -82,7 +83,7 @@ int main(void)
 		i = 0;
 		while (i < specs.width)
 		{
-			c = (i / 360) + (j / 360) *I;
+			c = ((i - specs.width / 2) / scale) + (((j - specs.height / 2) * I) / scale);
 			z = 0;
 			iteration = 0;
 			while (iteration < max_iteration)
@@ -92,16 +93,14 @@ int main(void)
 				z = z*z + c;
 				iteration++;
 			}
+
 			printf("iteration: %zu abs(x): %f\n", iteration, cabsf(z));
-			// if (cabsf(z) >= 7832)
-			// 	set_pixel(&img, i, j, 0x00ff0000);
-			// else
-				set_pixel(&img, i, j, compute_color(iteration, max_iteration));
-			mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
+			set_pixel(&img, i, j, compute_color(iteration, max_iteration));
 			i++;
 		}
 		j++;
 	}
+	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	mlx_loop(mlx);
 
 
