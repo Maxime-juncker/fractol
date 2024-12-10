@@ -47,9 +47,10 @@ int	compute_color(int iteration, int max_iteration)
 	int	g;
 	int	b;
 
-	r = 150 * iteration / max_iteration;
-	g = 100 * iteration / max_iteration;
-	b = 100;
+	float	psychedelic_power = 1.1;
+	r = 150 * iteration / max_iteration * (psychedelic_power);
+	g = 50 * iteration / max_iteration * (psychedelic_power);
+	b = 255 * iteration / max_iteration * (psychedelic_power);
 
 	return create_trgb(0, r, g, b);
 }
@@ -80,7 +81,7 @@ void	draw_fractal(t_specs *specs)
 		i = 0;
 		while (i < specs->width)
 		{
-			c = (((i - specs->x_offset) - specs->width / 2)) + ((((j - specs->y_offset) - specs->height / 2) * I));
+			c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
 			z = 0;
 			iteration = 0;
 			while (iteration < max_iteration)
@@ -111,16 +112,18 @@ int	handle_mouse_event(int button, int x, int y, t_specs *specs)
 		return (-1);
 	if (button == 4)
 	{
-		specs->scale -= .0005f;
-		// 	specs->x_offset -= x / 2;
-		// specs->y_offset -= y / 2;
+		specs->scale -= .05f * specs->scale;
+
+		specs->x_offset -= x - specs->width / 10;
+		specs->y_offset -= y - specs->height / 10;
 		draw_fractal(specs);
 	}
 	if (button == 5)
 	{
-		specs->scale += .0005f;
-		// specs->x_offset -= x / 2;
-		// specs->y_offset -= y / 2;
+		specs->scale += .05f * specs->scale;
+
+		specs->x_offset += x- specs->width / 10;
+		specs->y_offset -= y - specs->height / 10;
 		draw_fractal(specs);
 	}
 	return 0;
@@ -130,21 +133,19 @@ int	handle_key_event(int code, t_specs *specs)
 {
 	if (specs == NULL)
 		return (-1);
-	ft_printf("code: %d\n", code);
 	if (code == 'q')
 	{
 		mlx_destroy_window(specs->mlx, specs->mlx_win);
 		exit(0);
 	}
-
 	if (code == 'a')
-		specs->x_offset += 30;
+		specs->x_offset += 60;
 	if (code == 'd')
-		specs->x_offset -= 30;
+		specs->x_offset -= 60;
 	if (code == 'w')
-		specs->y_offset += 30;
+		specs->y_offset += 60;
 	if (code == 's')
-		specs->y_offset -= 30;
+		specs->y_offset -= 60;
 	draw_fractal(specs);
 	return (0);
 }
@@ -153,8 +154,8 @@ int main(void)
 {
 	t_specs	specs;
 
-	specs.width = 1920;
-	specs.height = 1080;
+	specs.width = 720;
+	specs.height = 480;
 	specs.title = "HAAAAAA";
 
 	specs.scale = .005f;
