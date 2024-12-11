@@ -14,6 +14,14 @@ typedef enum e_fractal
 	BURNING_SHIP
 } t_fractal;
 
+typedef	struct s_colors
+{
+	int r;
+	int g;
+	int b;
+	float power;
+} t_colors;
+
 typedef struct s_specs
 {
 	size_t	width;
@@ -23,12 +31,17 @@ typedef struct s_specs
 	void	*mlx;
 	void	*mlx_win;
 
+	t_colors colors;
+
 	t_fractal	type;
 	float scale;
 	int x_offset;
 	int y_offset;
+	float	threshold;
 
 } t_specs;
+
+
 
 typedef struct	s_data {
 	void	*img;
@@ -52,20 +65,42 @@ int	create_trgb(int t, int r, int g, int b)
 	return (t << 24 | r << 16 | g << 8 | b);
 }
 
-int	compute_color(int iteration, int max_iteration)
+
+void	set_color_palette(int id, t_specs *specs)
+{
+	// 0 = default
+	if (id == 0)
+	{
+		specs->colors.r = 200;
+		specs->colors.g = 200;
+		specs->colors.b = 200;
+		specs->colors.power = 1.3f;
+	}
+	if (id == 1)
+	{
+		specs->colors.r = 150;
+		specs->colors.g = 50;
+		specs->colors.b = 255;
+		specs->colors.power = 1.4f;
+	}
+	if (id == 2)
+	{
+		specs->colors.r = 50;
+		specs->colors.g = 20;
+		specs->colors.b = 255;
+		specs->colors.power = 1.4f;
+	}
+}
+
+int	compute_color(t_colors colors, int iteration, int max_iteration)
 {
 	int	r;
 	int	g;
 	int	b;
 
-	float	psychedelic_power = 1.1;
-	r = 150 * iteration / max_iteration * (psychedelic_power);
-	g = 50 * iteration / max_iteration * (psychedelic_power);
-	b = 255 * iteration / max_iteration * (psychedelic_power);
-	// r = 255 * iteration / max_iteration;
-	// g = 255 * iteration / max_iteration;
-	// b = 255 * iteration / max_iteration;
-
+	r = colors.r * iteration / max_iteration * colors.power;
+	g = colors.g * iteration / max_iteration * colors.power;
+	b = colors.b * iteration / max_iteration * colors.power;
 	return create_trgb(0, r, g, b);
 }
 
@@ -77,22 +112,17 @@ double complex mandelbrot(double complex z, double complex c, t_specs *specs)
 double complex julia(double complex z, double complex c, t_specs *specs)
 {
 	(void)specs;
-	// return ((z*z + c));
 	return (z*z*z*z*z + c);
 }
 
 double complex burning_ship(double complex z, double complex c, t_specs *specs)
 {
 	return ((fabs(creal(z)) + I*fabs(cimag(z)))*(fabs(creal(z)) + I*fabs(cimag(z))) + c * specs->scale);
-	// return(fabs(creal(z))*fabs(creal(z)) - fabs(cimag(z))*fabs(cimag(z))) * (2 * fabs(creal(z)) * fabs(cimag(z)) * I) + c * specs->scale;
 }
 
 void	draw_fractal(t_specs *specs)
 {
 	t_data	img;
-	time_t t;
-	t = clock();
-	static double full_time = 0;
 
 	img.img = mlx_new_image(specs->mlx, specs->width, specs->height);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel, &img.line_length, &img.endian);
@@ -103,8 +133,6 @@ void	draw_fractal(t_specs *specs)
 	size_t max_iteration = 30;
 	double complex c;
 	double complex z;
-
-	float	threshold = 2;
 
 	while (j < specs->height)
 	{
@@ -129,7 +157,7 @@ void	draw_fractal(t_specs *specs)
 			iteration = 0;
 			while (iteration < max_iteration)
 			{
-				if (cabs(z) >= threshold)
+				if (cabs(z) >= specs->threshold)
 					break;
 				if (specs->type == MANDLEBROT)
 					z = mandelbrot(z, c, specs);
@@ -139,20 +167,13 @@ void	draw_fractal(t_specs *specs)
 					z = burning_ship(z, c, specs);
 				iteration++;
 			}
-			// printf("iteration: %zu abs: %lf\n", iteration, cabs(z));
-			set_pixel(&img, i, j, compute_color(iteration, max_iteration));
+			set_pixel(&img, i, j, compute_color(specs->colors ,iteration, max_iteration));
 			i++;
 		}
 		j++;
 	}
-	t = clock() - t;
-	double time_taken = ((double)t)/CLOCKS_PER_SEC;
-	full_time += time_taken;
-	// printf("render time: %lf [full time]: %lf\n", time_taken, full_time);
 	mlx_put_image_to_window(specs->mlx, specs->mlx_win, img.img, 0, 0);
 }
-
-
 
 
 int	handle_mouse_event(int button, int x, int y, t_specs *specs)
@@ -188,19 +209,30 @@ int	handle_key_event(int code, t_specs *specs)
 		mlx_destroy_window(specs->mlx, specs->mlx_win);
 		exit(0);
 	}
-	if (code == 'a')
+	else if (code == 'a')
 		specs->x_offset += 60;
-	if (code == 'd')
+	else if (code == 'd')
 		specs->x_offset -= 60;
-	if (code == 'w')
+	else if (code == 'w')
 		specs->y_offset += 60;
-	if (code == 's')
+	else if (code == 's')
 		specs->y_offset -= 60;
-	if (code == 'r')
+	else if (code == 'r')
 	{
 		specs->x_offset = 0;
 		specs->y_offset = 0;
+		specs->scale = 0.005f;
 	}
+
+	// colors
+	else if (code == '1')
+		set_color_palette(0, specs);
+	else if (code == '2')
+		set_color_palette(1, specs);
+	else if (code == '3')
+		set_color_palette(2, specs);
+	else
+		return (0);
 	draw_fractal(specs);
 	return (0);
 }
@@ -214,11 +246,20 @@ void	menu(t_specs *specs)
 	if (buff[0] == '0')
 		exit(0);
 	if (buff[0] == '1')
+	{
+		specs->title = "mandelbrot";
 		specs->type = MANDLEBROT;
+	}
 	else if(buff[0] == '2')
+	{
+		specs->title = "julia";
 		specs->type = JULIA;
+	}
 	else if (buff[0] == '3')
+	{
+		specs->title = "burning ship";
 		specs->type = BURNING_SHIP;
+	}
 	else
 	{
 		ft_printf("\nWrong input, please try again\n");
@@ -235,12 +276,14 @@ int main(int argc, char **argv)
 
 	specs.width = 720;
 	specs.height = 480;
-	specs.title = "julia oui oui vrooooooooom";
+	specs.title = "Default";
 	specs.type = JULIA;
 
 	specs.scale = .005f;
 	specs.x_offset = 0;
 	specs.y_offset = 0;
+	specs.threshold = 2;
+	set_color_palette(0, &specs);
 
 	menu(&specs);
 
