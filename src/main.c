@@ -22,6 +22,14 @@ typedef	struct s_colors
 	float power;
 } t_colors;
 
+typedef struct	s_data {
+	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+}				t_data;
+
 typedef struct s_specs
 {
 	size_t	width;
@@ -30,6 +38,7 @@ typedef struct s_specs
 
 	void	*mlx;
 	void	*mlx_win;
+	t_data	img;
 
 	t_colors colors;
 
@@ -43,13 +52,6 @@ typedef struct s_specs
 
 } t_specs;
 
-typedef struct	s_data {
-	void	*img;
-	char	*addr;
-	int		bits_per_pixel;
-	int		line_length;
-	int		endian;
-}				t_data;
 
 void	set_pixel(t_data *data, int x, int y, int color)
 {
@@ -122,11 +124,10 @@ t_complex julia(t_complex z, t_complex c, t_specs *specs)
 	return (cadd(cpower(z, 2), c));
 }
 
-
 t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
 {
 	t_complex tmp;
-	(void)specs;
+
 	tmp.a = fabs(z.a)*fabs(z.a) - fabs(z.b)*fabs(z.b);
 	tmp.b = 2 * fabs(z.a) * fabs(z.b);
 	c = cmultr(c, specs->scale);
@@ -136,10 +137,8 @@ t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
 
 void	draw_fractal(t_specs *specs)
 {
-	t_data	img;
-
-	img.img = mlx_new_image(specs->mlx, specs->width, specs->height);
-	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel, &img.line_length, &img.endian);
+	specs->img.img = mlx_new_image(specs->mlx, specs->width, specs->height);
+	specs->img.addr = mlx_get_data_addr(specs->img.img, &specs->img.bits_per_pixel, &specs->img.line_length, &specs->img.endian);
 
 	float i = 0;
 	float j = 0;
@@ -184,12 +183,12 @@ void	draw_fractal(t_specs *specs)
 					z = burning_ship(z, c, specs);
 				iteration++;
 			}
-			set_pixel(&img, i, j, compute_color(specs->colors ,iteration, specs->max_iteration));
+			set_pixel(&specs->img, i, j, compute_color(specs->colors ,iteration, specs->max_iteration));
 			i++;
 		}
 		j++;
 	}
-	mlx_put_image_to_window(specs->mlx, specs->mlx_win, img.img, 0, 0);
+	mlx_put_image_to_window(specs->mlx, specs->mlx_win, specs->img.img, 0, 0);
 }
 
 
@@ -200,19 +199,9 @@ int	handle_mouse_event(int button, int x, int y, t_specs *specs)
 	if (specs == NULL)
 		return (-1);
 	if (button == 4)
-	{
 		specs->scale -= .05f * specs->scale;
-
-		// specs->x_offset -= x / 5 - specs->width / 10;
-		// specs->y_offset -= y / 3 - specs->height / 10;
-	}
 	if (button == 5)
-	{
 		specs->scale += .05f * specs->scale;
-
-		// specs->x_offset += x / 5 - specs->width / 10;
-		// specs->y_offset += y / 3 - specs->height / 10;
-	}
 	draw_fractal(specs);
 	return 0;
 }
@@ -223,7 +212,10 @@ int	handle_key_event(int code, t_specs *specs)
 		return (-1);
 	if (code == 'q')
 	{
-		mlx_destroy_window(specs->mlx, specs->mlx_win);
+		// free(specs.mlx);
+		free(specs->mlx);
+		free(specs->mlx_win);
+		// return (0);
 		exit(0);
 	}
 	else if (code == 'a')
@@ -270,24 +262,25 @@ int	handle_key_event(int code, t_specs *specs)
 	return (0);
 }
 
-void	menu(t_specs *specs)
+
+int	set_fractal(int argc, char **argv, t_specs *specs)
 {
-	char	buff[20];
-	ft_printf("Choose your fractal:\n(0) exit\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
-	read(0, buff, 1);
-	if (buff[0] == '0')
-		exit(0);
-	if (buff[0] == '1')
+	if (argc == 1)
+	{
+		ft_printf("Available options:\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
+		return (1);
+	}
+	if (argv[1][0] == '1')
 	{
 		specs->title = "mandelbrot";
 		specs->type = MANDLEBROT;
 	}
-	else if(buff[0] == '2')
+	else if(argv[1][0] == '2')
 	{
 		specs->title = "julia";
 		specs->type = JULIA;
 	}
-	else if (buff[0] == '3')
+	else if (argv[1][0] == '3')
 	{
 		specs->title = "burning ship";
 		specs->type = BURNING_SHIP;
@@ -295,8 +288,10 @@ void	menu(t_specs *specs)
 	else
 	{
 		ft_printf("\nWrong input, please try again\n");
-		menu(specs);
+		ft_printf("Available options:\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
+		return (1);
 	}
+	return (0);
 }
 
 int main(int argc, char **argv)
@@ -318,14 +313,15 @@ int main(int argc, char **argv)
 	specs.max_iteration = 50;
 	set_color_palette(0, &specs);
 
-	menu(&specs);
+	if (set_fractal(argc, argv, &specs) == 1)
+		exit(0);
+
 	specs.c.a = 0.285;
 	specs.c.b = 0.01;
-
-	if (argc == 3)
+	if (argc == 4)
 	{
-		specs.c.a = (double)atoi(argv[1]) / 100;
-		specs.c.b = (double)atoi(argv[2]) / 100;
+		specs.c.a = (double)atoi(argv[2]) / 100;
+		specs.c.b = (double)atoi(argv[3]) / 100;
 	}
 
 	specs.mlx = mlx_init();

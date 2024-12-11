@@ -24,6 +24,8 @@ BLUE 	= \033[34m
 
 RM = rm -fr
 
+ARGS = 1
+
 all: $(BIN_D)$(NAME)
 
 $(BIN_D)$(NAME): $(OBJ) $(BIN_D)
