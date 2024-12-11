@@ -38,6 +38,7 @@ typedef struct s_specs
 	int x_offset;
 	int y_offset;
 	float	threshold;
+	size_t	max_iteration;
 
 } t_specs;
 
@@ -117,7 +118,7 @@ t_complex mandelbrot(t_complex z, t_complex c, t_specs *specs)
 t_complex julia(t_complex z, t_complex c, t_specs *specs)
 {
 	(void)specs;
-	return (cadd(cpower(z, 4), c));
+	return (cadd(cpower(z, 2), c));
 }
 
 t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
@@ -142,7 +143,6 @@ void	draw_fractal(t_specs *specs)
 	float i = 0;
 	float j = 0;
 	size_t iteration = 0;
-	size_t max_iteration = 30;
 	t_complex c;
 	t_complex z;
 
@@ -160,8 +160,10 @@ void	draw_fractal(t_specs *specs)
 			}
 			else if (specs->type == JULIA)
 			{
-				c.a = 0.8;
-				c.b = 0.6;
+				// c.a = 0.285;
+				// c.b = 0.01;
+				c.a = -0.8;
+				c.b = 0.156;
 				z.a = ((i - specs->x_offset) - specs->width / 2) * specs->scale;
 				z.b = ((j - specs->y_offset) - specs->height / 2) * specs->scale;
 			}
@@ -173,7 +175,7 @@ void	draw_fractal(t_specs *specs)
 				c.b = (j - specs->y_offset) - specs->height / 2;
 			}
 			iteration = 0;
-			while (iteration < max_iteration)
+			while (iteration < specs->max_iteration)
 			{
 				if (cmagn(z) >= specs->threshold)
 					break;
@@ -185,7 +187,7 @@ void	draw_fractal(t_specs *specs)
 					z = burning_ship(z, c, specs);
 				iteration++;
 			}
-			set_pixel(&img, i, j, compute_color(specs->colors ,iteration, max_iteration));
+			set_pixel(&img, i, j, compute_color(specs->colors ,iteration, specs->max_iteration));
 			i++;
 		}
 		j++;
@@ -249,6 +251,22 @@ int	handle_key_event(int code, t_specs *specs)
 		set_color_palette(1, specs);
 	else if (code == '3')
 		set_color_palette(2, specs);
+
+	// settings
+	else if (code == '=')
+		specs->max_iteration += 10;
+	else if (code == '-')
+	{
+		if (specs->max_iteration - 10 > 10)
+			specs->max_iteration -= 10;
+	}
+	else if (code == 'z')
+		specs->threshold += 0.2f;
+	else if (code == 'x')
+	{
+		if (specs->threshold > 0.2f)
+			specs->threshold -= 0.2f;
+	}
 	else
 		return (0);
 	draw_fractal(specs);
@@ -283,7 +301,6 @@ void	menu(t_specs *specs)
 		ft_printf("\nWrong input, please try again\n");
 		menu(specs);
 	}
-
 }
 
 int main(int argc, char **argv)
@@ -302,6 +319,7 @@ int main(int argc, char **argv)
 	specs.x_offset = 0;
 	specs.y_offset = 0;
 	specs.threshold = 2;
+	specs.max_iteration = 50;
 	set_color_palette(0, &specs);
 
 	menu(&specs);
