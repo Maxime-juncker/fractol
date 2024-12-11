@@ -2,7 +2,7 @@ NAME = fractol
 CFLAGS = -Wall -Wextra -Werror -g3 $(INCLUDES_D)
 MAKEFLAGS += --no-print-directory
 
-SRC =	main.c
+SRC =	main.c complex.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -28,8 +28,10 @@ RM = rm -fr
 all: $(BIN_D)$(NAME)
 
 $(BIN_D)$(NAME): $(OBJ) $(BIN_D)
+	echo "$(YELLOW)[MAKE]: mlx$(RESET)"
+	$(MAKE) -C mlx_linux
 	echo "$(YELLOW)[MAKE]: libft$(RESET)"
-	$(MAKE)  -C libft
+	$(MAKE) -C libft
 	$(CC) $(CFLAGS) $(OBJ) libft/bin/libft.a -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(BIN_D)$(NAME)
 	echo "$(YELLOW)[CREATING EXE]: $@$(RESET)"
 	echo "$(GREEN)[SUCCESS]: $@$(RESET)"

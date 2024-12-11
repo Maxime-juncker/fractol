@@ -1,11 +1,11 @@
 #include <mlx.h>
 #include <libft.h>
 #include <math.h>
-#include <complex.h>
 #include <stdio.h>
 #include <time.h>
 #include <fcntl.h>
-
+#include <fractol.h>
+#include <complex.h>
 typedef enum e_fractal
 {
 	NONE,
@@ -41,8 +41,6 @@ typedef struct s_specs
 
 } t_specs;
 
-
-
 typedef struct	s_data {
 	void	*img;
 	char	*addr;
@@ -65,6 +63,12 @@ int	create_trgb(int t, int r, int g, int b)
 	return (t << 24 | r << 16 | g << 8 | b);
 }
 
+double	dabs(double n)
+{
+	if (n < 0)
+		return (n * -1);
+	return (n);
+}
 
 void	set_color_palette(int id, t_specs *specs)
 {
@@ -104,20 +108,28 @@ int	compute_color(t_colors colors, int iteration, int max_iteration)
 	return create_trgb(0, r, g, b);
 }
 
-double complex mandelbrot(double complex z, double complex c, t_specs *specs)
+//? Zn+1 = Zn^2 + c
+t_complex mandelbrot(t_complex z, t_complex c, t_specs *specs)
 {
-	return (z*z + c * specs->scale);
+	return (cadd(cpower(z, 2), cmultr(c, specs->scale)));
 }
 
-double complex julia(double complex z, double complex c, t_specs *specs)
+t_complex julia(t_complex z, t_complex c, t_specs *specs)
 {
 	(void)specs;
-	return (z*z*z*z*z + c);
+	return (cadd(cpower(z, 4), c));
 }
 
-double complex burning_ship(double complex z, double complex c, t_specs *specs)
+t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
 {
-	return ((fabs(creal(z)) + I*fabs(cimag(z)))*(fabs(creal(z)) + I*fabs(cimag(z))) + c * specs->scale);
+	t_complex tmp;
+
+	tmp.a = dabs(z.a);
+	tmp.a = dabs(z.b);
+	tmp = cpower(tmp, 2);
+	tmp = cmultr(cadd(z, c), specs->scale);
+	return (z);
+	// return ((fabs(creal(z)) + I*fabs(cimag(z)))*(fabs(creal(z)) + I*fabs(cimag(z))) + c * specs->scale);
 }
 
 void	draw_fractal(t_specs *specs)
@@ -131,8 +143,8 @@ void	draw_fractal(t_specs *specs)
 	float j = 0;
 	size_t iteration = 0;
 	size_t max_iteration = 30;
-	double complex c;
-	double complex z;
+	t_complex c;
+	t_complex z;
 
 	while (j < specs->height)
 	{
@@ -141,23 +153,29 @@ void	draw_fractal(t_specs *specs)
 		{
 			if (specs->type == MANDLEBROT)
 			{
-				c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
-				z = 0;
+				c.a = (i - specs->x_offset) - specs->width / 2;
+				c.b = (j - specs->y_offset) - specs->height / 2;
+				z.a = 0;
+				z.b = 0;
 			}
 			else if (specs->type == JULIA)
 			{
-				c = 0.8 + 0.6 * I;
-				z = (((i - specs->x_offset) - specs->width / 2)* specs->scale) + (((j - specs->y_offset) - specs->height / 2) * I* specs->scale);
+				c.a = 0.8;
+				c.b = 0.6;
+				z.a = ((i - specs->x_offset) - specs->width / 2) * specs->scale;
+				z.b = ((j - specs->y_offset) - specs->height / 2) * specs->scale;
 			}
 			else
 			{
-				z = 0;
-				c = ((i - specs->x_offset) - specs->width / 2) + ((j - specs->y_offset) - specs->height / 2) * I;
+				z.a = 0;
+				z.b = 0;
+				c.a = (i - specs->x_offset) - specs->width / 2;
+				c.b = (j - specs->y_offset) - specs->height / 2;
 			}
 			iteration = 0;
 			while (iteration < max_iteration)
 			{
-				if (cabs(z) >= specs->threshold)
+				if (cmagn(z) >= specs->threshold)
 					break;
 				if (specs->type == MANDLEBROT)
 					z = mandelbrot(z, c, specs);
@@ -272,6 +290,7 @@ int main(int argc, char **argv)
 {
 	(void)argc;
 	(void)argv;
+
 	t_specs	specs;
 
 	specs.width = 720;
