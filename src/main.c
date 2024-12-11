@@ -39,6 +39,7 @@ typedef struct s_specs
 	int y_offset;
 	float	threshold;
 	size_t	max_iteration;
+	t_complex c;
 
 } t_specs;
 
@@ -90,10 +91,10 @@ void	set_color_palette(int id, t_specs *specs)
 	}
 	if (id == 2)
 	{
-		specs->colors.r = 50;
+		specs->colors.r = 220;
 		specs->colors.g = 20;
-		specs->colors.b = 255;
-		specs->colors.power = 1.4f;
+		specs->colors.b = 50;
+		specs->colors.power = 1.5f;
 	}
 }
 
@@ -121,16 +122,16 @@ t_complex julia(t_complex z, t_complex c, t_specs *specs)
 	return (cadd(cpower(z, 2), c));
 }
 
+
 t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
 {
 	t_complex tmp;
-
-	tmp.a = dabs(z.a);
-	tmp.a = dabs(z.b);
-	tmp = cpower(tmp, 2);
-	tmp = cmultr(cadd(z, c), specs->scale);
-	return (z);
-	// return ((fabs(creal(z)) + I*fabs(cimag(z)))*(fabs(creal(z)) + I*fabs(cimag(z))) + c * specs->scale);
+	(void)specs;
+	tmp.a = fabs(z.a)*fabs(z.a) - fabs(z.b)*fabs(z.b);
+	tmp.b = 2 * fabs(z.a) * fabs(z.b);
+	c = cmultr(c, specs->scale);
+	tmp = cadd(tmp, c);
+	return (tmp);
 }
 
 void	draw_fractal(t_specs *specs)
@@ -160,19 +161,15 @@ void	draw_fractal(t_specs *specs)
 			}
 			else if (specs->type == JULIA)
 			{
-				// c.a = 0.285;
-				// c.b = 0.01;
-				c.a = -0.8;
-				c.b = 0.156;
 				z.a = ((i - specs->x_offset) - specs->width / 2) * specs->scale;
 				z.b = ((j - specs->y_offset) - specs->height / 2) * specs->scale;
 			}
 			else
 			{
-				z.a = 0;
-				z.b = 0;
 				c.a = (i - specs->x_offset) - specs->width / 2;
 				c.b = (j - specs->y_offset) - specs->height / 2;
+				z.a = 0;
+				z.b = 0;
 			}
 			iteration = 0;
 			while (iteration < specs->max_iteration)
@@ -182,7 +179,7 @@ void	draw_fractal(t_specs *specs)
 				if (specs->type == MANDLEBROT)
 					z = mandelbrot(z, c, specs);
 				else if (specs->type == JULIA)
-					z = julia(z, c, specs);
+					z = julia(z, specs->c, specs);
 				else if (specs->type == BURNING_SHIP)
 					z = burning_ship(z, c, specs);
 				iteration++;
@@ -275,7 +272,6 @@ int	handle_key_event(int code, t_specs *specs)
 
 void	menu(t_specs *specs)
 {
-	(void)specs;
 	char	buff[20];
 	ft_printf("Choose your fractal:\n(0) exit\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
 	read(0, buff, 1);
@@ -323,6 +319,14 @@ int main(int argc, char **argv)
 	set_color_palette(0, &specs);
 
 	menu(&specs);
+	specs.c.a = 0.285;
+	specs.c.b = 0.01;
+
+	if (argc == 3)
+	{
+		specs.c.a = (double)atoi(argv[1]) / 100;
+		specs.c.b = (double)atoi(argv[2]) / 100;
+	}
 
 	specs.mlx = mlx_init();
 	specs.mlx_win = mlx_new_window(specs.mlx, specs.width, specs.height, specs.title);

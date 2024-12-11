@@ -23,7 +23,6 @@ RESET 	= \033[0m
 BLUE 	= \033[34m
 
 RM = rm -fr
-# ARGS =  
 
 all: $(BIN_D)$(NAME)
 
@@ -42,6 +41,7 @@ $(OBJ_D)%.o : $(SRCS_D)%.c | $(OBJ_D)
 
 .PHONY: clean
 clean:
+	$(MAKE) clean -C mlx_linux
 	$(MAKE) clean -C ./libft
 	$(MAKE) clog
 	$(RM) $(OBJ_D)
