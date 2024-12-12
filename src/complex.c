@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   complex.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/12/12 10:16:55 by mjuncker          #+#    #+#             */
+/*   Updated: 2024/12/12 10:17:02 by mjuncker         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <fractol.h>
 #include <math.h>
 
@@ -59,6 +71,7 @@ t_complex	cpower(t_complex z, int pow)
 	}
 	return (z);
 }
+
 /*
  * abs of a complex number
  * @param z complex number

@@ -2,7 +2,7 @@ NAME = fractol
 CFLAGS = -Wall -Wextra -Werror -g3 $(INCLUDES_D)
 MAKEFLAGS += --no-print-directory
 
-SRC =	main.c complex.c
+SRC =	main.c complex.c colors.c fractal.c input.c formula.c
 
 OBJ = $(SRC:.c=.o)
 
