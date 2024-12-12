@@ -48,6 +48,7 @@ typedef struct s_specs
 	int y_offset;
 	float	threshold;
 	size_t	max_iteration;
+	int	nb_symetries;
 	t_complex c;
 
 } t_specs;
@@ -114,13 +115,13 @@ int	compute_color(t_colors colors, int iteration, int max_iteration)
 //? Zn+1 = Zn^2 + c
 t_complex mandelbrot(t_complex z, t_complex c, t_specs *specs)
 {
-	return (cadd(cpower(z, 2), cmultr(c, specs->scale)));
+	return (cadd(cpower(z, specs->nb_symetries), cmultr(c, specs->scale)));
 }
 
 t_complex julia(t_complex z, t_complex c, t_specs *specs)
 {
 	(void)specs;
-	return (cadd(cpower(z, 2), c));
+	return (cadd(cpower(z, specs->nb_symetries), c));
 }
 
 t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
@@ -136,9 +137,6 @@ t_complex burning_ship(t_complex z, t_complex c, t_specs *specs)
 
 void	draw_fractal(t_specs *specs)
 {
-	specs->img.img = mlx_new_image(specs->mlx, specs->width, specs->height);
-	specs->img.addr = mlx_get_data_addr(specs->img.img, &specs->img.bits_per_pixel, &specs->img.line_length, &specs->img.endian);
-
 	float i = 0;
 	float j = 0;
 	size_t iteration = 0;
@@ -244,18 +242,16 @@ int	handle_key_event(int code, t_specs *specs)
 	// settings
 	else if (code == '=')
 		specs->max_iteration += 10;
-	else if (code == '-')
-	{
-		if (specs->max_iteration - 10 > 10)
+	else if (code == '-' && specs->max_iteration - 10 > 10)
 			specs->max_iteration -= 10;
-	}
 	else if (code == 'z')
 		specs->threshold += 0.2f;
-	else if (code == 'x')
-	{
-		if (specs->threshold > 0.2f)
+	else if (code == 'x' && specs->threshold > 0.2f)
 			specs->threshold -= 0.2f;
-	}
+	else if (code == 'e')
+		specs->nb_symetries++;
+	else if (code == 'f' && specs->nb_symetries > 2)
+			specs->nb_symetries--;
 	else
 		return (0);
 	draw_fractal(specs);
@@ -311,6 +307,7 @@ int main(int argc, char **argv)
 	specs.y_offset = 0;
 	specs.threshold = 2;
 	specs.max_iteration = 50;
+	specs.nb_symetries = 2;
 	set_color_palette(0, &specs);
 
 	if (set_fractal(argc, argv, &specs) == 1)
@@ -326,6 +323,9 @@ int main(int argc, char **argv)
 
 	specs.mlx = mlx_init();
 	specs.mlx_win = mlx_new_window(specs.mlx, specs.width, specs.height, specs.title);
+
+	specs.img.img = mlx_new_image(specs.mlx, specs.width, specs.height);
+	specs.img.addr = mlx_get_data_addr(specs.img.img, &specs.img.bits_per_pixel, &specs.img.line_length, &specs.img.endian);
 
 	mlx_key_hook(specs.mlx_win, handle_key_event, &specs);
 	mlx_mouse_hook(specs.mlx_win, handle_mouse_event, &specs);
