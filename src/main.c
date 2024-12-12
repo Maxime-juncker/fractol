@@ -76,7 +76,6 @@ double	dabs(double n)
 
 void	set_color_palette(int id, t_specs *specs)
 {
-	// 0 = default
 	if (id == 0)
 	{
 		specs->colors.r = 200;
@@ -86,10 +85,10 @@ void	set_color_palette(int id, t_specs *specs)
 	}
 	if (id == 1)
 	{
-		specs->colors.r = 150;
-		specs->colors.g = 50;
-		specs->colors.b = 255;
-		specs->colors.power = 1.4f;
+		specs->colors.r = 250;
+		specs->colors.g = 250;
+		specs->colors.b = 50;
+		specs->colors.power = 1.3f;
 	}
 	if (id == 2)
 	{
@@ -212,9 +211,10 @@ int	handle_key_event(int code, t_specs *specs)
 		return (-1);
 	if (code == 'q')
 	{
-		// free(specs.mlx);
+		mlx_destroy_image(specs->mlx, specs->img.img);
+		mlx_destroy_window(specs->mlx, specs->mlx_win);
+		mlx_destroy_display(specs->mlx);
 		free(specs->mlx);
-		free(specs->mlx_win);
 		// return (0);
 		exit(0);
 	}
