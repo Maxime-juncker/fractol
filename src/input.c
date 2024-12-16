@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 10:30:48 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/12 10:53:37 by mjuncker         ###   ########.fr       */
+/*   Updated: 2024/12/16 10:14:26 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,9 +77,17 @@ int	handle_mouse_event(int button, int x, int y, t_specs *specs)
 	if (specs == NULL)
 		return (-1);
 	if (button == 4)
+	{
 		specs->scale -= .05f * specs->scale;
+		specs->x_offset *= 1.05f;
+		specs->y_offset *= 1.05f;
+	}
 	if (button == 5)
+	{
 		specs->scale += .05f * specs->scale;
+		specs->x_offset *= 0.95f;
+		specs->y_offset *= 0.95f;
+	}
 	draw_fractal(specs);
 	return (0);
 }

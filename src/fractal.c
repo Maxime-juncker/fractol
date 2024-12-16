@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 11:13:44 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/12 11:15:16 by mjuncker         ###   ########.fr       */
+/*   Updated: 2024/12/16 10:16:43 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,17 +82,17 @@ void	set_fractal(int argc, char **argv, t_specs *specs)
 		ft_printf("options:\n(1) mandlebrot\n(2) julia\n(3) burning ship\n");
 		exit(0);
 	}
-	if (argv[1][0] == '1')
+	if (ft_strncmp(argv[1], "1", 2) == 0)
 	{
 		specs->title = "mandelbrot";
 		specs->type = MANDLEBROT;
 	}
-	else if (argv[1][0] == '2')
+	else if (ft_strncmp(argv[1], "2", 2) == 0)
 	{
 		specs->title = "julia";
 		specs->type = JULIA;
 	}
-	else if (argv[1][0] == '3')
+	else if (ft_strncmp(argv[1], "3", 2) == 0)
 	{
 		specs->title = "burning ship";
 		specs->type = BURNING_SHIP;

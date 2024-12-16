@@ -8,7 +8,6 @@ OBJ = $(SRC:.c=.o)
 
 OBJ_D = obj/
 SRCS_D = src/
-BIN_D = bin/
 LOG_D = log/
 INCLUDES_D = -Iincludes/ -Ilibft/includes/
 
@@ -26,14 +25,14 @@ RM = rm -fr
 
 ARGS = 1
 
-all: $(BIN_D)$(NAME)
+all: $(NAME)
 
-$(BIN_D)$(NAME): $(OBJ) $(BIN_D)
+$(NAME): $(OBJ)
 	echo "$(YELLOW)[MAKE]: mlx$(RESET)"
 	$(MAKE) -C mlx_linux
 	echo "$(YELLOW)[MAKE]: libft$(RESET)"
 	$(MAKE) -C libft
-	$(CC) $(CFLAGS) $(OBJ) libft/bin/libft.a -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(BIN_D)$(NAME)
+	$(CC) $(CFLAGS) $(OBJ) libft/bin/libft.a -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
 	echo "$(YELLOW)[CREATING EXE]: $@$(RESET)"
 	echo "$(GREEN)[SUCCESS]: $@$(RESET)"
 
@@ -53,7 +52,7 @@ clean:
 fclean: clean
 	$(MAKE) fclean -C ./libft
 	$(RM) $(NAME)
-	$(RM) $(BIN_D)
+	$(RM) $(NAME)
 	echo "$(RED)[CLEAN]: binaries$(RESET)"
 
 .PHONY: clog
@@ -75,13 +74,9 @@ $(LOG_D):
 	echo "$(YELLOW)[CREATING]: $(LOG_D)$(RESET)"
 	mkdir -p $(LOG_D)
 
-$(BIN_D):
-	echo "$(YELLOW)[CREATING]: $(BIN_D)$(RESET)"
-	mkdir -p $(BIN_D)
-
 .PHONY: debug
 debug: all $(LOG_D)
-	$(BIN_D)$(NAME) $(ARGS) > $(LOG_D)$(shell date --iso=seconds).log
+	./$(NAME) $(ARGS) > $(LOG_D)$(shell date --iso=seconds).log
 	cat $(LOG_D)$(shell date --iso=seconds).log
 	echo "$(BLUE)[SAVED]: $(LOG_D)$(shell date --iso=seconds).log"
 
