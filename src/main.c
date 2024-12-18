@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 10:17:47 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/12 11:14:14 by mjuncker         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:56:30 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,15 @@ t_specs	setup_specs(int width, int height)
 	return (specs);
 }
 
+int	destroy(t_specs *specs)
+{
+	mlx_destroy_image(specs->mlx, specs->img.img);
+	mlx_destroy_window(specs->mlx, specs->mlx_win);
+	mlx_destroy_display(specs->mlx);
+	free(specs->mlx);
+	exit(0);
+}
+
 int	main(int argc, char **argv)
 {
 	t_specs	specs;
@@ -49,6 +58,7 @@ int	main(int argc, char **argv)
 	&specs.img.bits_per_pixel, &specs.img.line_length, &specs.img.endian);
 	mlx_key_hook(specs.mlx_win, handle_key_event, &specs);
 	mlx_mouse_hook(specs.mlx_win, handle_mouse_event, &specs);
+	mlx_hook(specs.mlx_win, 17, 1L << 2, destroy, &specs);
 	draw_fractal(&specs);
 	mlx_loop(specs.mlx);
 }

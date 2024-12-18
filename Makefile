@@ -25,18 +25,23 @@ RM = rm -fr
 
 ARGS = 1
 
-all: $(NAME)
+all:
+	$(MAKE) libft
+	$(MAKE) $(NAME)
+
+.PHONY: libft
+libft:
+	$(MAKE) -C libft
 
 $(NAME): $(OBJ)
 	echo "$(YELLOW)[MAKE]: mlx$(RESET)"
 	$(MAKE) -C mlx_linux
 	echo "$(YELLOW)[MAKE]: libft$(RESET)"
-	$(MAKE) -C libft
 	$(CC) $(CFLAGS) $(OBJ) libft/bin/libft.a -Lmlx_linux -lmlx_Linux -L/usr/lib -Imlx_linux -lXext -lX11 -lm -lz -o $(NAME)
 	echo "$(YELLOW)[CREATING EXE]: $@$(RESET)"
 	echo "$(GREEN)[SUCCESS]: $@$(RESET)"
 
-$(OBJ_D)%.o : $(SRCS_D)%.c | $(OBJ_D)
+$(OBJ_D)%.o : $(SRCS_D)%.c libft/bin/libft.a includes/fractol.h | $(OBJ_D)
 	echo "$(BLUE)[COMPILING]: $@$(RESET)"
 	$(CC) $(CFLAGS) -I/usr/include -Imlx_linux -O3 -c $< -o $@
 

@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 10:30:48 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/16 10:14:26 by mjuncker         ###   ########.fr       */
+/*   Updated: 2024/12/18 15:48:02 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ int	handle_key_event(int code, t_specs *specs)
 {
 	if (specs == NULL)
 		return (-1);
-	if (code == 'q')
+	if (code == 65307)
 	{
 		mlx_destroy_image(specs->mlx, specs->img.img);
 		mlx_destroy_window(specs->mlx, specs->mlx_win);

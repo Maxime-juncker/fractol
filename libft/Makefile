@@ -80,7 +80,7 @@ $(BIN_D)$(NAME): $(OBJ) | $(BIN_D)
 	@echo "$(GREEN)[LINKING]: $(NAME)$(RESET)"
 	@ar rcs $(BIN_D)$(NAME) $(OBJ)
 
-$(OBJ_D)%.o: $(SRCS_D)%.c | $(OBJ_D)
+$(OBJ_D)%.o: $(SRCS_D)%.c includes/libft.h | $(OBJ_D)
 	@echo "$(BLUE)[COMPILING]: $@$(RESET)"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
