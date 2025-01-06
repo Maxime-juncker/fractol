@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 10:30:48 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/18 15:48:02 by mjuncker         ###   ########.fr       */
+/*   Updated: 2025/01/06 09:49:58 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,7 @@ int	handle_key_event(int code, t_specs *specs)
 		return (-1);
 	if (code == 65307)
 	{
-		mlx_destroy_image(specs->mlx, specs->img.img);
-		mlx_destroy_window(specs->mlx, specs->mlx_win);
-		mlx_destroy_display(specs->mlx);
-		free(specs->mlx);
-		exit(0);
+		destroy(specs);
 	}
 	handle_movement(code, specs);
 	handle_settings(code, specs);

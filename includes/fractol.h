@@ -6,7 +6,7 @@
 /*   By: mjuncker <mjuncker@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/12 10:18:15 by mjuncker          #+#    #+#             */
-/*   Updated: 2024/12/12 11:16:08 by mjuncker         ###   ########.fr       */
+/*   Updated: 2025/01/06 09:49:28 by mjuncker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,7 @@ int				handle_mouse_event(int button, int x, int y, t_specs *specs);
 
 // main.c
 void			draw_fractal(t_specs *specs);
+int				destroy(t_specs *specs);
 
 // fractal.c
 void			set_fractal(int argc, char **argv, t_specs *specs);
